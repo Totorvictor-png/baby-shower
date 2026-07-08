@@ -208,7 +208,6 @@
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">You're invited</div>
     <h1><svg class="hatch-inline" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <g class="hatch-chick">
         <ellipse cx="70" cy="132" rx="12" ry="18" fill="#F2C94C" transform="rotate(20 70 132)"/>
@@ -351,7 +350,7 @@
     if (!syncOn) { syncNote.textContent = ''; return; }
     syncNote.textContent = syncError
       ? 'Connection lost, showing the last known state. Retrying…'
-      : 'Live list: everyone sees claims instantly.';
+      : '';
     syncNote.classList.toggle('err', syncError);
   }
 
