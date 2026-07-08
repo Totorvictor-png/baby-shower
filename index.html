@@ -172,31 +172,18 @@
   .sync-note.err { color: var(--peach-deep); }
 
 
-  /* --- Hatching egg intro --- */
-  #hatch {
-    position: fixed; inset: 0; z-index: 60;
-    background: var(--ground);
-    display: grid; place-items: center;
-    transition: opacity .55s ease; cursor: pointer;
-  }
-  #hatch.hatch-out { opacity: 0; pointer-events: none; }
-  .hatch-stage { text-align: center; }
+  /* --- Hatching egg beside the title --- */
+  .hatch-inline { display: inline-block; width: 54px; height: 62px; vertical-align: -14px; margin-right: 8px; }
   .hatch-top, .hatch-bottom { opacity: 0; }
   .hatch-chick { opacity: 0; transform: translateY(42px); }
   .hatch-crack { stroke-dasharray: 220; stroke-dashoffset: 220; }
-  .hatch-caption {
-    opacity: 0; transform: translateY(8px);
-    font-family: var(--display); font-weight: 800; font-size: 22px;
-    color: var(--sage-deep); margin-top: 4px;
-  }
   .hatch-egg { transform-box: view-box; transform-origin: 100px 200px; }
   .hatch-top { transform-box: view-box; transform-origin: 100px 100px; }
-  .hatch-run .hatch-egg   { animation: hatch-wobble .65s ease-in-out 2, hatch-vanish .01s linear 1.98s forwards; }
-  .hatch-run .hatch-crack { animation: hatch-draw .5s ease-out 1.4s forwards; }
-  .hatch-run .hatch-top   { animation: hatch-show .01s linear 1.98s forwards, hatch-pop .85s cubic-bezier(.35,-.3,.35,1.1) 2.05s forwards; }
-  .hatch-run .hatch-bottom{ animation: hatch-show .01s linear 1.98s forwards; }
-  .hatch-run .hatch-chick { animation: hatch-rise .6s cubic-bezier(.2,.9,.3,1.25) 2.2s forwards, hatch-cheep .45s ease-in-out 3.1s; }
-  .hatch-run .hatch-caption { animation: hatch-cap .5s ease-out 3s forwards; }
+  .hatch-egg   { animation: hatch-wobble .6s ease-in-out .4s 2, hatch-vanish .01s linear 1.72s forwards; }
+  .hatch-crack { animation: hatch-draw .45s ease-out 1.25s forwards; }
+  .hatch-top   { animation: hatch-show .01s linear 1.72s forwards, hatch-pop .8s cubic-bezier(.35,-.3,.35,1.1) 1.78s forwards; }
+  .hatch-bottom{ animation: hatch-show .01s linear 1.72s forwards; }
+  .hatch-chick { animation: hatch-rise .55s cubic-bezier(.2,.9,.3,1.25) 1.9s forwards, hatch-cheep .45s ease-in-out 2.75s; }
   @keyframes hatch-wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
   @keyframes hatch-vanish { to { opacity: 0; } }
   @keyframes hatch-show   { to { opacity: 1; } }
@@ -204,7 +191,13 @@
   @keyframes hatch-pop    { 55% { opacity: 1; } to { transform: translate(-40px, -96px) rotate(-26deg); opacity: 0; } }
   @keyframes hatch-rise   { to { transform: translateY(0); opacity: 1; } }
   @keyframes hatch-cheep  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @keyframes hatch-cap    { to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .hatch-egg, .hatch-crack, .hatch-top, .hatch-bottom, .hatch-chick { animation: none; }
+    .hatch-egg, .hatch-top { opacity: 0; }
+    .hatch-bottom { opacity: 1; }
+    .hatch-chick { opacity: 1; transform: translateY(0); }
+  }
+
 
   footer { text-align: center; margin-top: 40px; font-size: 12.5px; color: var(--ink-soft); }
 
@@ -213,9 +206,10 @@
   }
 </style>
 
-<div id="hatch" aria-hidden="true" title="Tap to skip">
-  <div class="hatch-stage">
-    <svg viewBox="0 0 200 230" width="190" height="219" xmlns="http://www.w3.org/2000/svg">
+<div class="wrap">
+  <header>
+    <div class="eyebrow">You're invited</div>
+    <h1><svg class="hatch-inline" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <g class="hatch-chick">
         <ellipse cx="70" cy="132" rx="12" ry="18" fill="#F2C94C" transform="rotate(20 70 132)"/>
         <ellipse cx="130" cy="132" rx="12" ry="18" fill="#F2C94C" transform="rotate(-20 130 132)"/>
@@ -244,29 +238,7 @@
         <ellipse cx="95" cy="170" rx="5" ry="3" fill="#F3E7D3"/>
         <path class="hatch-crack" d="M42 128 L58 120 L72 132 L88 118 L104 133 L120 119 L136 130 L152 121 L158 128" fill="none" stroke="#C9B99F" stroke-width="2.5" stroke-linejoin="round"/>
       </g>
-    </svg>
-    <div class="hatch-caption">Hello little one!</div>
-  </div>
-</div>
-<script>
-(function () {
-  var h = document.getElementById('hatch');
-  var seen = false;
-  try { seen = sessionStorage.getItem('hatch-seen') === '1'; } catch (e) {}
-  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (seen || reduce) { h.remove(); return; }
-  try { sessionStorage.setItem('hatch-seen', '1'); } catch (e) {}
-  h.classList.add('hatch-run');
-  function bye() { h.classList.add('hatch-out'); setTimeout(function () { h.remove(); }, 600); }
-  h.addEventListener('click', bye);
-  setTimeout(bye, 4400);
-})();
-</script>
-
-<div class="wrap">
-  <header>
-    <div class="eyebrow">You're invited</div>
-    <h1>&#129528;&#127868; Baby Shower Gift List</h1>
+    </svg>Baby Shower Gift List</h1>
     <p class="sub">Pick a gift and tap <strong>"I'll buy this"</strong> so no one doubles up.<span id="hostHint" hidden> You're in host mode: add articles with the card at the end, remove them with the × button.</span></p>
   </header>
 
