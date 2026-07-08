@@ -172,25 +172,51 @@
   .sync-note.err { color: var(--peach-deep); }
 
 
-  /* --- Hatching egg beside the title --- */
+  /* --- Hatching egg beside the title (loops forever) --- */
   .hatch-inline { display: inline-block; width: 54px; height: 62px; vertical-align: -14px; margin-right: 8px; }
-  .hatch-top, .hatch-bottom { opacity: 0; }
-  .hatch-chick { opacity: 0; transform: translateY(42px); }
-  .hatch-crack { stroke-dasharray: 220; stroke-dashoffset: 220; }
-  .hatch-egg { transform-box: view-box; transform-origin: 100px 200px; }
-  .hatch-top { transform-box: view-box; transform-origin: 100px 100px; }
-  .hatch-egg   { animation: hatch-wobble .6s ease-in-out .4s 2, hatch-vanish .01s linear 1.72s forwards; }
-  .hatch-crack { animation: hatch-draw .45s ease-out 1.25s forwards; }
-  .hatch-top   { animation: hatch-show .01s linear 1.72s forwards, hatch-pop .8s cubic-bezier(.35,-.3,.35,1.1) 1.78s forwards; }
-  .hatch-bottom{ animation: hatch-show .01s linear 1.72s forwards; }
-  .hatch-chick { animation: hatch-rise .55s cubic-bezier(.2,.9,.3,1.25) 1.9s forwards, hatch-cheep .45s ease-in-out 2.75s; }
-  @keyframes hatch-wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
-  @keyframes hatch-vanish { to { opacity: 0; } }
-  @keyframes hatch-show   { to { opacity: 1; } }
-  @keyframes hatch-draw   { to { stroke-dashoffset: 0; } }
-  @keyframes hatch-pop    { 55% { opacity: 1; } to { transform: translate(-40px, -96px) rotate(-26deg); opacity: 0; } }
-  @keyframes hatch-rise   { to { transform: translateY(0); opacity: 1; } }
-  @keyframes hatch-cheep  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .hatch-egg { transform-box: view-box; transform-origin: 100px 200px; animation: loop-egg 6s ease-in-out infinite; }
+  .hatch-crack { stroke-dasharray: 220; animation: loop-crack 6s linear infinite; }
+  .hatch-top { transform-box: view-box; transform-origin: 100px 100px; animation: loop-top 6s ease-in-out infinite; }
+  .hatch-bottom { animation: loop-bottom 6s ease-in-out infinite; }
+  .hatch-chick { animation: loop-chick 6s ease-in-out infinite; }
+  @keyframes loop-egg {
+    0%, 6% { transform: rotate(0); opacity: 1; }
+    10%   { transform: rotate(-6deg); }
+    13.5% { transform: rotate(5deg); }
+    17%   { transform: rotate(-4deg); }
+    20.5% { transform: rotate(3deg); }
+    24%   { transform: rotate(-2deg); }
+    28.5% { transform: rotate(0); opacity: 1; }
+    28.7%, 90% { opacity: 0; transform: rotate(0); }
+    97%, 100% { opacity: 1; transform: rotate(0); }
+  }
+  @keyframes loop-crack {
+    0%, 20% { stroke-dashoffset: 220; }
+    28.4%, 88% { stroke-dashoffset: 0; }
+    88.1%, 100% { stroke-dashoffset: 220; }
+  }
+  @keyframes loop-top {
+    0%, 28.6% { opacity: 0; transform: none; }
+    28.7%, 30% { opacity: 1; transform: none; }
+    36% { opacity: 1; }
+    43%, 100% { opacity: 0; transform: translate(-40px, -96px) rotate(-26deg); }
+  }
+  @keyframes loop-bottom {
+    0%, 28.6% { opacity: 0; }
+    28.7%, 86% { opacity: 1; }
+    92%, 100% { opacity: 0; }
+  }
+  @keyframes loop-chick {
+    0%, 31.5% { opacity: 0; transform: translateY(42px); }
+    40.5% { opacity: 1; transform: translateY(0); }
+    46%   { transform: translateY(0); }
+    49.5% { transform: translateY(-8px); }
+    53%   { transform: translateY(0); }
+    60%   { transform: translateY(0); }
+    63%   { transform: translateY(-6px); }
+    66%, 84% { transform: translateY(0); opacity: 1; }
+    92%, 100% { opacity: 0; transform: translateY(42px); }
+  }
   @media (prefers-reduced-motion: reduce) {
     .hatch-egg, .hatch-crack, .hatch-top, .hatch-bottom, .hatch-chick { animation: none; }
     .hatch-egg, .hatch-top { opacity: 0; }
