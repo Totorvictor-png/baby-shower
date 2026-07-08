@@ -115,6 +115,7 @@
     font-size: 13.5px; font-weight: 700; color: var(--sage-deep);
   }
   .claimed-tag .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .claimed-tag.other { color: var(--ink-soft); border-color: var(--line); justify-content: center; padding: 8px 14px; }
   .ghost-btn {
     border: none; background: transparent; color: var(--ink-soft);
     font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 999px;
@@ -265,6 +266,12 @@
   let addFormOpen = false;
   let syncError = false;
 
+  // Which gifts THIS browser claimed (name shown only to its owner)
+  const MY_KEY = 'babyshower-myclaims-v1';
+  let myClaims = {};
+  try { myClaims = JSON.parse(localStorage.getItem(MY_KEY)) || {}; } catch (e) {}
+  function saveMy() { try { localStorage.setItem(MY_KEY, JSON.stringify(myClaims)); } catch (e) {} }
+
   // Host mode: open the page once with #host-2026 to unlock adding/removing on this device;
   // #guest switches the device back to guest view.
   const HOST_FLAG = 'babyshower-host';
@@ -307,13 +314,13 @@
   async function loadRemote() {
     const [rows, claims] = await Promise.all([
       api('gift_items?select=*&order=position.asc,id.asc'),
-      api('gift_claims?select=item_id,claimed_by')
+      api('gift_claims?select=item_id')
     ]);
-    const claimed = {};
-    claims.forEach(c => { claimed[c.item_id] = c.claimed_by; });
+    const claimedSet = new Set(claims.map(c => c.item_id));
     items = rows.map(r => ({
       id: r.id, name: r.name, price: r.price || '', link: r.link || '',
-      note: r.note || '', img: r.img || '', art: '', claimedBy: claimed[r.id] || ''
+      note: r.note || '', img: r.img || '', art: '',
+      claimed: claimedSet.has(r.id), claimedBy: myClaims[r.id] || ''
     }));
   }
 
@@ -329,18 +336,22 @@
   async function doClaim(id, guest) {
     const item = items.find(i => i.id === id);
     if (!item) return;
-    item.claimedBy = guest;
     claimingId = null;
-    save(); render();
-    if (!syncOn) return;
+    if (!syncOn) { item.claimedBy = guest; save(); render(); return; }
     try {
-      await api('gift_claims?on_conflict=item_id', {
+      await api('gift_claims', {
         method: 'POST',
-        headers: { 'Prefer': 'resolution=merge-duplicates' },
         body: JSON.stringify([{ item_id: id, claimed_by: guest }])
       });
+      myClaims[id] = guest; saveMy();
+      item.claimed = true; item.claimedBy = guest;
+      render();
     } catch (e) {
-      alert("Your claim couldn't be saved. Please check your connection and try again.");
+      if (String(e.message).indexOf('409') !== -1) {
+        alert('Oh! Someone reserved this gift just before you. Pick another one?');
+      } else {
+        alert("Your claim couldn't be saved. Please check your connection and try again.");
+      }
       await refresh();
     }
   }
@@ -348,11 +359,13 @@
   async function doUnclaim(id) {
     const item = items.find(i => i.id === id);
     if (!item) return;
-    item.claimedBy = '';
-    save(); render();
-    if (!syncOn) return;
-    try { await api('gift_claims?item_id=eq.' + id, { method: 'DELETE' }); }
-    catch (e) {
+    if (!syncOn) { item.claimedBy = ''; save(); render(); return; }
+    try {
+      await api('gift_claims?item_id=eq.' + id, { method: 'DELETE' });
+      delete myClaims[id]; saveMy();
+      item.claimed = false; item.claimedBy = '';
+      render();
+    } catch (e) {
       alert("Couldn't free the gift up. Please check your connection and try again.");
       await refresh();
     }
@@ -418,17 +431,22 @@
 
     items.forEach(item => {
       const card = document.createElement('div');
-      card.className = 'card' + (item.claimedBy ? ' claimed' : '');
+      card.className = 'card' + ((syncOn ? item.claimed : item.claimedBy) ? ' claimed' : '');
 
       let linkHtml = '';
       if (item.link && /^https?:\/\//i.test(item.link)) {
         linkHtml = '<a class="item-link" href="' + esc(item.link) + '" target="_blank" rel="noopener">View article ↗</a>';
       }
 
+      const taken = syncOn ? item.claimed : !!item.claimedBy;
+      const mine = taken && !!item.claimedBy;
+
       let bottom;
-      if (item.claimedBy) {
-        bottom = '<div class="claimed-tag"><span class="who">✔ ' + esc(item.claimedBy) + ' is buying this</span>' +
+      if (mine) {
+        bottom = '<div class="claimed-tag"><span class="who">✔ You are buying this</span>' +
                  '<button class="ghost-btn" data-unclaim="' + item.id + '">undo</button></div>';
+      } else if (taken) {
+        bottom = '<div class="claimed-tag other"><span class="who">\u{1F381} Already reserved</span></div>';
       } else if (claimingId === item.id) {
         bottom = '<form class="claim-form" data-claim-form="' + item.id + '">' +
                  '<input name="guest" placeholder="Your name" aria-label="Your name" required maxlength="40">' +

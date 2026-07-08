@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Gift List — Host Dashboard</title>
+<style>
+  :root {
+    --ground: #FDF9F3; --card: #FFFFFF; --ink: #453A4E; --ink-soft: #8A7E93;
+    --sage: #7FB6A4; --sage-deep: #4E8A76; --sage-tint: #EAF4F0;
+    --peach: #F0A184; --peach-deep: #D97D5C; --peach-tint: #FDEFE8;
+    --butter: #F3D9A8; --line: #EDE4D8;
+    --display: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+    --body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: var(--body); color: var(--ink);
+    background:
+      radial-gradient(circle at 12% 0%, rgba(243,217,168,.35), transparent 34%),
+      radial-gradient(circle at 88% 4%, rgba(127,182,164,.22), transparent 30%),
+      var(--ground);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+  header { text-align: center; margin-bottom: 28px; }
+  .eyebrow { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--peach-deep); font-weight: 700; }
+  h1 { font-family: var(--display); font-size: clamp(26px, 5vw, 36px); font-weight: 800; margin: 8px 0 6px; }
+  .sub { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
+  .pin-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 24px; max-width: 360px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 2px 10px rgba(69,58,78,.05);
+  }
+  .pin-card label { font-size: 12px; font-weight: 700; color: var(--ink-soft); letter-spacing: .06em; text-transform: uppercase; }
+  .pin-card input {
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 12px;
+    font-size: 16px; font-family: var(--body); width: 100%;
+  }
+  .pin-card button {
+    border: none; border-radius: 999px; padding: 12px;
+    background: var(--sage-deep); color: #fff; font-weight: 700;
+    font-family: var(--display); font-size: 15px; cursor: pointer;
+  }
+  .pin-error { color: var(--peach-deep); font-size: 13px; font-weight: 600; margin: 0; display: none; }
+
+  .stats { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 20px; text-align: center; min-width: 110px;
+  }
+  .stat b { display: block; font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+
+  .tbl-scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 2px 10px rgba(69,58,78,.05); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  th { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  td.price { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-soft); }
+  .pill { display: inline-block; border-radius: 999px; padding: 4px 12px; font-size: 12.5px; font-weight: 700; }
+  .pill.yes { background: var(--sage-tint); color: var(--sage-deep); }
+  .pill.no  { background: #F5F1EA; color: var(--ink-soft); font-weight: 600; }
+  .when { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+
+  .foot { text-align: center; margin-top: 22px; font-size: 12.5px; color: var(--ink-soft); }
+  .foot a { color: var(--peach-deep); font-weight: 600; text-decoration: none; cursor: pointer; }
+  .foot a:hover { text-decoration: underline; }
+  .updated { text-align: center; font-size: 12px; color: var(--ink-soft); margin: 14px 0 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Hosts only</div>
+    <h1>&#129528;&#127868; Gift List Dashboard</h1>
+    <p class="sub">Who is bringing what — guests never see these names.</p>
+  </header>
+
+  <div class="pin-card" id="pinCard">
+    <label for="pin">Host PIN</label>
+    <input id="pin" type="password" inputmode="text" autocomplete="off" placeholder="Enter the PIN">
+    <p class="pin-error" id="pinError">That PIN isn't right. Try again.</p>
+    <button id="pinGo">Open dashboard</button>
+  </div>
+
+  <div id="dash" hidden>
+    <div class="stats">
+      <div class="stat"><b id="stClaimed">–</b><span>claimed</span></div>
+      <div class="stat"><b id="stOpen">–</b><span>still free</span></div>
+      <div class="stat"><b id="stValue">–</b><span>AED claimed</span></div>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Article</th><th>Price</th><th>Status</th><th>When</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="updated" id="updated"></p>
+    <p class="foot"><a href="./">Open the guest list</a> · <a id="logout">Lock dashboard</a></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  const SYNC_URL = 'https://ykjzpuhwwkhpbwtcyytd.supabase.co';
+  const SYNC_KEY = 'sb_publishable_VrwvTTaqzck0F8H_-2j0jA_ALlCtYor';
+  const PIN_KEY = 'babyshower-admin-pin';
+
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({
+      'apikey': SYNC_KEY,
+      'Authorization': 'Bearer ' + SYNC_KEY,
+      'Content-Type': 'application/json'
+    }, opts.headers || {});
+    return fetch(SYNC_URL + '/rest/v1/' + path, opts).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text().then(t => t ? JSON.parse(t) : null);
+    });
+  }
+
+  function fmtWhen(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' +
+           d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function load(pin) {
+    const [claims, itemsRows] = await Promise.all([
+      api('rpc/admin_claims', { method: 'POST', body: JSON.stringify({ pin: pin }) }),
+      api('gift_items?select=id,name,price,position&order=position.asc,id.asc')
+    ]);
+    const byId = {};
+    claims.forEach(c => { byId[c.item_id] = c; });
+
+    let claimedCount = 0, value = 0;
+    const rows = itemsRows.map(it => {
+      const c = byId[it.id];
+      if (c) {
+        claimedCount++;
+        const m = (it.price || '').replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
+        if (m && /AED/i.test(it.price)) value += parseFloat(m[1]);
+      }
+      return '<tr><td>' + esc(it.name) + '</td>' +
+             '<td class="price">' + esc(it.price || '–') + '</td>' +
+             '<td>' + (c ? '<span class="pill yes">✔ ' + esc(c.claimed_by) + '</span>' : '<span class="pill no">free</span>') + '</td>' +
+             '<td class="when">' + (c ? fmtWhen(c.claimed_at) : '') + '</td></tr>';
+    });
+
+    document.getElementById('rows').innerHTML = rows.join('');
+    document.getElementById('stClaimed').textContent = claimedCount;
+    document.getElementById('stOpen').textContent = itemsRows.length - claimedCount;
+    document.getElementById('stValue').textContent = Math.round(value).toLocaleString('en-US');
+    document.getElementById('updated').textContent = 'Updates automatically · last check ' +
+      new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  let timer = null;
+  async function unlock(pin, fromCache) {
+    try {
+      await load(pin);
+    } catch (e) {
+      if (!fromCache) document.getElementById('pinError').style.display = 'block';
+      try { localStorage.removeItem(PIN_KEY); } catch (err) {}
+      return;
+    }
+    try { localStorage.setItem(PIN_KEY, pin); } catch (err) {}
+    document.getElementById('pinCard').hidden = true;
+    document.getElementById('dash').hidden = false;
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => load(pin).catch(() => {}), 20000);
+  }
+
+  document.getElementById('pinGo').addEventListener('click', () => {
+    const pin = document.getElementById('pin').value.trim();
+    if (pin) unlock(pin, false);
+  });
+  document.getElementById('pin').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('pinGo').click();
+  });
+  document.getElementById('logout').addEventListener('click', () => {
+    try { localStorage.removeItem(PIN_KEY); } catch (err) {}
+    location.reload();
+  });
+
+  let cached = '';
+  try { cached = localStorage.getItem(PIN_KEY) || ''; } catch (e) {}
+  if (cached) unlock(cached, true);
+})();
+</script>
+</body>
+</html>
