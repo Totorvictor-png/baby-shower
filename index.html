@@ -171,12 +171,97 @@
   .sync-note { margin-top: 10px; font-size: 12.5px; font-weight: 600; color: var(--sage-deep); }
   .sync-note.err { color: var(--peach-deep); }
 
+
+  /* --- Hatching egg intro --- */
+  #hatch {
+    position: fixed; inset: 0; z-index: 60;
+    background: var(--ground);
+    display: grid; place-items: center;
+    transition: opacity .55s ease; cursor: pointer;
+  }
+  #hatch.hatch-out { opacity: 0; pointer-events: none; }
+  .hatch-stage { text-align: center; }
+  .hatch-top, .hatch-bottom { opacity: 0; }
+  .hatch-chick { opacity: 0; transform: translateY(42px); }
+  .hatch-crack { stroke-dasharray: 220; stroke-dashoffset: 220; }
+  .hatch-caption {
+    opacity: 0; transform: translateY(8px);
+    font-family: var(--display); font-weight: 800; font-size: 22px;
+    color: var(--sage-deep); margin-top: 4px;
+  }
+  .hatch-egg { transform-box: view-box; transform-origin: 100px 200px; }
+  .hatch-top { transform-box: view-box; transform-origin: 100px 100px; }
+  .hatch-run .hatch-egg   { animation: hatch-wobble .65s ease-in-out 2, hatch-vanish .01s linear 1.98s forwards; }
+  .hatch-run .hatch-crack { animation: hatch-draw .5s ease-out 1.4s forwards; }
+  .hatch-run .hatch-top   { animation: hatch-show .01s linear 1.98s forwards, hatch-pop .85s cubic-bezier(.35,-.3,.35,1.1) 2.05s forwards; }
+  .hatch-run .hatch-bottom{ animation: hatch-show .01s linear 1.98s forwards; }
+  .hatch-run .hatch-chick { animation: hatch-rise .6s cubic-bezier(.2,.9,.3,1.25) 2.2s forwards, hatch-cheep .45s ease-in-out 3.1s; }
+  .hatch-run .hatch-caption { animation: hatch-cap .5s ease-out 3s forwards; }
+  @keyframes hatch-wobble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
+  @keyframes hatch-vanish { to { opacity: 0; } }
+  @keyframes hatch-show   { to { opacity: 1; } }
+  @keyframes hatch-draw   { to { stroke-dashoffset: 0; } }
+  @keyframes hatch-pop    { 55% { opacity: 1; } to { transform: translate(-40px, -96px) rotate(-26deg); opacity: 0; } }
+  @keyframes hatch-rise   { to { transform: translateY(0); opacity: 1; } }
+  @keyframes hatch-cheep  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes hatch-cap    { to { opacity: 1; transform: translateY(0); } }
+
   footer { text-align: center; margin-top: 40px; font-size: 12.5px; color: var(--ink-soft); }
 
   @media (prefers-reduced-motion: reduce) {
     .card { transition: none; }
   }
 </style>
+
+<div id="hatch" aria-hidden="true" title="Tap to skip">
+  <div class="hatch-stage">
+    <svg viewBox="0 0 200 230" width="190" height="219" xmlns="http://www.w3.org/2000/svg">
+      <g class="hatch-chick">
+        <ellipse cx="70" cy="132" rx="12" ry="18" fill="#F2C94C" transform="rotate(20 70 132)"/>
+        <ellipse cx="130" cy="132" rx="12" ry="18" fill="#F2C94C" transform="rotate(-20 130 132)"/>
+        <circle cx="100" cy="120" r="36" fill="#F9D45C"/>
+        <path d="M92 86 q4 -9 8 -1 q4 -8 8 0" fill="none" stroke="#E8965A" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="87" cy="112" r="3.6" fill="#453A4E"/>
+        <circle cx="113" cy="112" r="3.6" fill="#453A4E"/>
+        <circle cx="78" cy="122" r="5" fill="#F0A184" opacity=".55"/>
+        <circle cx="122" cy="122" r="5" fill="#F0A184" opacity=".55"/>
+        <path d="M94 120 L106 120 L100 129 Z" fill="#E8965A"/>
+      </g>
+      <g class="hatch-bottom">
+        <path d="M42 128 L58 120 L72 132 L88 118 L104 133 L120 119 L136 130 L152 121 L158 128 C159 170 135 203 100 203 C65 203 41 170 42 128 Z" fill="#FFFDF7" stroke="#E8DCCB" stroke-width="2.5"/>
+        <ellipse cx="80" cy="170" rx="5" ry="3" fill="#F3E7D3"/>
+        <ellipse cx="120" cy="182" rx="4" ry="2.5" fill="#F3E7D3"/>
+      </g>
+      <g class="hatch-top">
+        <path d="M42 128 C41 95 55 42 100 42 C145 42 159 95 158 128 L152 121 L136 130 L120 119 L104 133 L88 118 L72 132 L58 120 Z" fill="#FFFDF7" stroke="#E8DCCB" stroke-width="2.5"/>
+        <ellipse cx="88" cy="75" rx="5" ry="3" fill="#F3E7D3"/>
+        <ellipse cx="120" cy="95" rx="4" ry="2.5" fill="#F3E7D3"/>
+      </g>
+      <g class="hatch-egg">
+        <path d="M100 42 C145 42 160 95 160 140 C160 180 135 205 100 205 C65 205 40 180 40 140 C40 95 55 42 100 42 Z" fill="#FFFDF7" stroke="#E8DCCB" stroke-width="2.5"/>
+        <ellipse cx="85" cy="80" rx="6" ry="3.5" fill="#F3E7D3"/>
+        <ellipse cx="122" cy="100" rx="4.5" ry="2.5" fill="#F3E7D3"/>
+        <ellipse cx="95" cy="170" rx="5" ry="3" fill="#F3E7D3"/>
+        <path class="hatch-crack" d="M42 128 L58 120 L72 132 L88 118 L104 133 L120 119 L136 130 L152 121 L158 128" fill="none" stroke="#C9B99F" stroke-width="2.5" stroke-linejoin="round"/>
+      </g>
+    </svg>
+    <div class="hatch-caption">Hello little one!</div>
+  </div>
+</div>
+<script>
+(function () {
+  var h = document.getElementById('hatch');
+  var seen = false;
+  try { seen = sessionStorage.getItem('hatch-seen') === '1'; } catch (e) {}
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (seen || reduce) { h.remove(); return; }
+  try { sessionStorage.setItem('hatch-seen', '1'); } catch (e) {}
+  h.classList.add('hatch-run');
+  function bye() { h.classList.add('hatch-out'); setTimeout(function () { h.remove(); }, 600); }
+  h.addEventListener('click', bye);
+  setTimeout(bye, 4400);
+})();
+</script>
 
 <div class="wrap">
   <header>
